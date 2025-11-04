@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Board {
+  id       String   @id @default(uuid())
+  name     String
+  tasks    Task[]
+  statuses Status[]
+}
+
+model Task {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  subtasks    Subtask[]
+  status      Status    @relation(fields: [statusId], references: [id], onDelete: Cascade)
+  statusId    String
+  board       Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([boardId])
+  @@index([statusId])
+}
+
+model Subtask {
+  id        String  @id @default(uuid())
+  title     String
+  completed Boolean @default(false)
+  task      Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId    String
+
+  @@index([taskId])
+}
+
+model Status {
+  id      String @id @default(uuid())
+  name    String
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId String
+  tasks   Task[]
+
+  @@index([boardId])
+}
