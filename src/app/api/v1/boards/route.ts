@@ -24,3 +24,93 @@ export async function GET() {
     );
   }
 }
+
+export async function POST(request: Request) {
+  const { name, statuses } = await request.json();
+
+  if (!name || typeof name !== "string" || name.trim() === "") {
+    return NextResponse.json(
+      {
+        error: "Board name is required",
+      },
+      {
+        status: 400,
+      },
+    );
+  }
+
+  if (!statuses) {
+    return NextResponse.json(
+      {
+        error: "Board statuses are required",
+      },
+      {
+        status: 400,
+      },
+    );
+  }
+
+  try {
+    const statusList = JSON.parse(statuses);
+
+    if (!Array.isArray(statusList)) {
+      return NextResponse.json(
+        {
+          error: "Statuses must be a valid JSON array",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    if (
+      statusList.some(
+        (status: unknown) => typeof status !== "string" || status.trim() === "",
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error: "All statuses must be non-empty strings",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const statusData = statusList.map((status: string) => ({
+      name: status.trim(),
+    }));
+
+    const board = await prisma.board.create({
+      data: {
+        name: name.trim(),
+        statuses: {
+          createMany: {
+            data: statusData,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json(
+      {
+        data: board,
+      },
+      {
+        status: 201,
+      },
+    );
+  } catch (e) {
+    console.log(e);
+    return NextResponse.json(
+      {
+        error: "Failed to create board",
+      },
+      {
+        status: 500,
+      },
+    );
+  }
+}
