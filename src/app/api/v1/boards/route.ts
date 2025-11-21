@@ -26,7 +26,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const { name, statuses } = await request.json();
+  const { name, statuses = [] } = await request.json();
 
   if (!name || typeof name !== "string" || name.trim() === "") {
     return NextResponse.json(
@@ -39,10 +39,10 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!statuses) {
+  if (statuses && !Array.isArray(statuses)) {
     return NextResponse.json(
       {
-        error: "Board statuses are required",
+        error: "Statuses must be a valid JSON array",
       },
       {
         status: 400,
@@ -50,25 +50,8 @@ export async function POST(request: Request) {
     );
   }
 
-  try {
-    const statusList = JSON.parse(statuses);
-
-    if (!Array.isArray(statusList)) {
-      return NextResponse.json(
-        {
-          error: "Statuses must be a valid JSON array",
-        },
-        {
-          status: 400,
-        },
-      );
-    }
-
-    if (
-      statusList.some(
-        (status: unknown) => typeof status !== "string" || status.trim() === "",
-      )
-    ) {
+  const statusesList = statuses.map((status: unknown) => {
+    if (typeof status !== "string" || status.trim() === "") {
       return NextResponse.json(
         {
           error: "All statuses must be non-empty strings",
@@ -79,16 +62,18 @@ export async function POST(request: Request) {
       );
     }
 
-    const statusData = statusList.map((status: string) => ({
+    return {
       name: status.trim(),
-    }));
+    };
+  });
 
+  try {
     const board = await prisma.board.create({
       data: {
         name: name.trim(),
         statuses: {
           createMany: {
-            data: statusData,
+            data: statusesList,
           },
         },
       },
@@ -102,8 +87,7 @@ export async function POST(request: Request) {
         status: 201,
       },
     );
-  } catch (e) {
-    console.log(e);
+  } catch {
     return NextResponse.json(
       {
         error: "Failed to create board",
