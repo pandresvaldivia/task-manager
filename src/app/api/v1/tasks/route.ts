@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { isValidString } from "@/modules/shared/helpers/string";
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { isValidString } from '@/modules/shared/helpers/string';
+import { Prisma } from '@/generated/prisma/client';
 
 export async function POST(request: Request) {
   const {
@@ -14,44 +15,44 @@ export async function POST(request: Request) {
   if (!isValidString(title)) {
     return NextResponse.json(
       {
-        error: "Task title is required",
+        error: 'Task title is required',
       },
       {
         status: 400,
-      },
+      }
     );
   }
 
   if (!isValidString(description)) {
     return NextResponse.json(
       {
-        error: "Task description is required",
+        error: 'Task description is required',
       },
       {
         status: 400,
-      },
+      }
     );
   }
 
   if (!isValidString(statusId)) {
     return NextResponse.json(
       {
-        error: "Task status id is required",
+        error: 'Task status id is required',
       },
       {
         status: 400,
-      },
+      }
     );
   }
 
   if (subtasks && !Array.isArray(subtasks)) {
     return NextResponse.json(
       {
-        error: "Task subtasks must be a valid array",
+        error: 'Task subtasks must be a valid array',
       },
       {
         status: 400,
-      },
+      }
     );
   }
 
@@ -59,11 +60,11 @@ export async function POST(request: Request) {
     if (!isValidString(subtask)) {
       return NextResponse.json(
         {
-          error: "All subtasks must be non-empty strings",
+          error: 'All subtasks must be non-empty strings',
         },
         {
           status: 400,
-        },
+        }
       );
     }
 
@@ -93,16 +94,27 @@ export async function POST(request: Request) {
       },
       {
         status: 201,
-      },
+      }
     );
-  } catch {
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2003') {
+        return NextResponse.json(
+          {
+            error: 'The provided statusId or boardId does not exist',
+          },
+          { status: 404 }
+        );
+      }
+    }
+
     return NextResponse.json(
       {
-        error: "Failed to create task",
+        error: 'Failed to create task',
       },
       {
         status: 500,
-      },
+      }
     );
   }
 }
