@@ -1,21 +1,21 @@
-import { NextResponse } from "next/server";
-import { Prisma } from "@/generated/prisma/client";
-import prisma from "@/lib/prisma";
+import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@/generated/prisma/client';
+import prisma from '@/lib/prisma';
 
 export async function PUT(
-  request: Request,
-  context: RouteContext<"/api/v1/move-tasks/[id]">,
+  request: NextRequest,
+  context: RouteContext<'/api/v1/move-tasks/[id]'>
 ) {
   try {
     const { id } = await context.params;
     const { statusId } = await request.json();
 
     if (!id) {
-      return NextResponse.json({ error: "Missing task id" }, { status: 400 });
+      return NextResponse.json({ error: 'Missing task id' }, { status: 400 });
     }
 
     if (!statusId) {
-      return NextResponse.json({ error: "Missing statusId" }, { status: 400 });
+      return NextResponse.json({ error: 'Missing statusId' }, { status: 400 });
     }
 
     const task = await prisma.task.findUnique({
@@ -25,7 +25,7 @@ export async function PUT(
     });
 
     if (!task) {
-      return NextResponse.json({ error: "Task not found" }, { status: 404 });
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
 
     const status = await prisma.status.findUnique({
@@ -35,7 +35,7 @@ export async function PUT(
     });
 
     if (!status) {
-      return NextResponse.json({ error: "Status not found" }, { status: 404 });
+      return NextResponse.json({ error: 'Status not found' }, { status: 404 });
     }
 
     const updatedTask = await prisma.task.update({
@@ -52,20 +52,20 @@ export async function PUT(
     return NextResponse.json(updatedTask, { status: 200 });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2025") {
+      if (error.code === 'P2025') {
         return NextResponse.json(
           {
             error:
-              "Some of the provided ids are invalid. Please check the task and status ids.",
+              'Some of the provided ids are invalid. Please check the task and status ids.',
           },
-          { status: 404 },
+          { status: 404 }
         );
       }
     }
 
     return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
+      { error: 'Internal Server Error' },
+      { status: 500 }
     );
   }
 }
