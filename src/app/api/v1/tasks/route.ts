@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { isValidString } from "@/modules/shared/helpers/string";
 
 export async function POST(request: Request) {
   const {
@@ -10,7 +11,7 @@ export async function POST(request: Request) {
     boardId,
   } = await request.json();
 
-  if (!title || typeof title !== "string" || title.trim() === "") {
+  if (!isValidString(title)) {
     return NextResponse.json(
       {
         error: "Task title is required",
@@ -21,11 +22,7 @@ export async function POST(request: Request) {
     );
   }
 
-  if (
-    !description ||
-    typeof description !== "string" ||
-    description.trim() === ""
-  ) {
+  if (!isValidString(description)) {
     return NextResponse.json(
       {
         error: "Task description is required",
@@ -36,7 +33,7 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!statusId || typeof statusId !== "string") {
+  if (!isValidString(statusId)) {
     return NextResponse.json(
       {
         error: "Task status id is required",
@@ -59,7 +56,7 @@ export async function POST(request: Request) {
   }
 
   const subtasksList = subtasks.map((subtask: unknown) => {
-    if (typeof subtask !== "string" || subtask.trim() === "") {
+    if (!isValidString(subtask)) {
       return NextResponse.json(
         {
           error: "All subtasks must be non-empty strings",
@@ -71,7 +68,7 @@ export async function POST(request: Request) {
     }
 
     return {
-      title: subtask.trim(),
+      title: (subtask as string).trim(),
     };
   });
 
