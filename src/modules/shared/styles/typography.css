@@ -1,0 +1,27 @@
+@layer components {
+  .heading-xl {
+    @apply font-bold text-2xl leading-tight;
+  }
+
+  .heading-l {
+    @apply font-bold text-lg leading-tight;
+  }
+
+  .heading-m {
+    @apply font-bold text-base leading-snug;
+  }
+
+  .heading-s {
+    @apply font-bold text-sx leading-snug;
+    letter-spacing: 0.2em;
+  }
+
+  .body-l {
+    @apply font-medium text-sm;
+    line-height: 1.7;
+  }
+
+  .body-m {
+    @apply font-bold text-xs leading-tight;
+  }
+}

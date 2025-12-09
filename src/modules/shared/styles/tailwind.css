@@ -1,0 +1,25 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-*: initial;
+  --color-black: #000112;
+  --color-very-dark-gray: #20212c;
+  --color-dark-gray: #2b2c37;
+  --color-lines-dark: #3e3f4e;
+  --color-lines-light: #e4ebfa;
+  --color-medium-grey: #828fa3;
+  --color-light-grey: #f4f7fd;
+  --color-white: #ffffff;
+  --color-red: #ea5555;
+  --color-red-hover: #ff9898;
+  --color-purple: #635fc7;
+  --color-purple-hover: #a8a4ff;
+
+  --font-*: initial;
+  --font-jakarta: var(--font-jakarta), sans-serif;
+
+  --text-base: 0.9375rem;
+  --text-sm: 0.8125rem;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
