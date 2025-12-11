@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 
 export async function PUT(
   request: NextRequest,
-  context: RouteContext<'/api/v1/move-tasks/[id]'>
+  context: RouteContext<'/api/v1/task/[id]/move'>
 ) {
   try {
     const { id } = await context.params;
