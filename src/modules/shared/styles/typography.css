@@ -12,7 +12,7 @@
   }
 
   .heading-s {
-    @apply font-bold text-sx leading-snug;
+    @apply font-bold text-xs leading-snug;
     letter-spacing: 0.2em;
   }
 
