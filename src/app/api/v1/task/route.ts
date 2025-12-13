@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { Prisma } from '@/generated/prisma/client';
 import z from 'zod';
+import { handleApiError } from '@/modules/shared/helpers/api';
 
 const postTaskSchema = z.object({
   title: z.string().min(1, 'Task title is required'),
@@ -53,39 +53,10 @@ export async function POST(request: Request) {
       }
     );
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          error: 'Validation failed',
-          details: error.issues.map((issue) => ({
-            field: issue.path.join('.'),
-            message: issue.message,
-          })),
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2003') {
-        return NextResponse.json(
-          {
-            error: 'The provided statusId or boardId does not exist',
-          },
-          { status: 404 }
-        );
-      }
-    }
-
-    return NextResponse.json(
-      {
-        error: 'Failed to create task',
-      },
-      {
-        status: 500,
-      }
-    );
+    return handleApiError({
+      error,
+      model: 'Task',
+      defaultMessage: 'Failed to create task',
+    });
   }
 }

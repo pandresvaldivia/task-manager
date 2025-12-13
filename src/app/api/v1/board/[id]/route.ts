@@ -1,20 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { Prisma } from '@/generated/prisma/client';
 import { StatusScalarWhereInput } from '@/generated/prisma/models';
-import { isValidString } from '@/modules/shared/helpers/string';
+import z from 'zod';
+import { handleApiError } from '@/modules/shared/helpers/api';
+
+type BoardRoute = '/api/v1/board/[id]';
+
+const idSchema = z.uuidv4('Invalid ID format');
 
 export async function GET(
   _request: NextRequest,
-  context: RouteContext<'/api/v1/boards/[id]'>
+  context: RouteContext<BoardRoute>
 ) {
-  const { id } = await context.params;
-
-  if (!isValidString(id)) {
-    return NextResponse.json({ error: 'Missing id' }, { status: 400 });
-  }
-
   try {
+    const params = await context.params;
+    const id = idSchema.parse(params.id);
+
     const board = await prisma.board.findUnique({
       where: { id },
       include: {
@@ -26,10 +27,6 @@ export async function GET(
       },
     });
 
-    if (!board) {
-      return NextResponse.json({ error: 'Board not found' }, { status: 404 });
-    }
-
     return NextResponse.json(
       {
         data: board,
@@ -38,25 +35,23 @@ export async function GET(
         status: 200,
       }
     );
-  } catch {
-    return NextResponse.json(
-      { error: 'Failed to fetch board' },
-      { status: 500 }
-    );
+  } catch (error) {
+    return handleApiError({
+      error,
+      model: 'Board',
+      defaultMessage: 'Failed to get the board',
+    });
   }
 }
 
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext<'/api/v1/boards/[id]'>
+  context: RouteContext<BoardRoute>
 ) {
-  const { id } = await context.params;
-
-  if (!isValidString(id)) {
-    return NextResponse.json({ error: 'Missing id' }, { status: 400 });
-  }
-
   try {
+    const params = await context.params;
+    const id = idSchema.parse(params.id);
+
     await prisma.board.delete({
       where: { id },
     });
@@ -70,90 +65,51 @@ export async function DELETE(
       }
     );
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') {
-        return NextResponse.json(
-          {
-            error: 'Board not found',
-          },
-          { status: 404 }
-        );
-      }
-    }
-
-    return NextResponse.json(
-      { error: 'Failed to delete board' },
-      { status: 500 }
-    );
+    return handleApiError({
+      error,
+      model: 'Board',
+      defaultMessage: 'Failed to delete board',
+    });
   }
 }
 
+const putRequestSchema = z.object({
+  name: z.string().min(1, 'Board name is required'),
+  statuses: z
+    .array(
+      z.object({
+        id: z.uuidv4().optional(),
+        name: z.string().min(1, 'Status name is required'),
+      })
+    )
+    .optional(),
+});
+
 export async function PUT(
   request: NextRequest,
-  context: RouteContext<'/api/v1/boards/[id]'>
+  context: RouteContext<BoardRoute>
 ) {
-  const { id } = await context.params;
-  const { name, statuses = [] } = await request.json();
-
-  if (!isValidString(id)) {
-    return NextResponse.json(
-      {
-        error: 'Board id is required',
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-
-  if (!isValidString(name)) {
-    return NextResponse.json(
-      {
-        error: 'Board name is required',
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-
-  if (statuses && !Array.isArray(statuses)) {
-    return NextResponse.json(
-      {
-        error: 'Statuses must be a valid JSON array',
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-
-  const statusesList: { id?: string; name: string }[] = [];
-  const existingIds: StatusScalarWhereInput[] = [];
-
-  for (const status of statuses) {
-    if (!isValidString(status.name)) {
-      return NextResponse.json(
-        {
-          error: 'All statuses must have a name',
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    if (status.id) {
-      existingIds.push({ id: status.id });
-    }
-
-    statusesList.push({
-      id: status.id,
-      name: status.name.trim(),
-    });
-  }
-
   try {
+    const params = await context.params;
+    const id = idSchema.parse(params.id);
+
+    const body = await request.json();
+    const { name, statuses = [] } = putRequestSchema.parse(body);
+
+    const statusesList: { id?: string; name: string }[] = [];
+    const existingIds: StatusScalarWhereInput[] = [];
+
+    for (const status of statuses) {
+      if (status.id) {
+        existingIds.push({ id: status.id });
+      }
+
+      statusesList.push({
+        id: status.id,
+        name: status.name.trim(),
+      });
+    }
+
     const board = await prisma.board.update({
       where: { id },
       data: {
@@ -180,29 +136,11 @@ export async function PUT(
         status: 200,
       }
     );
-  } catch (e) {
-    console.log({ error: e });
-    if (e instanceof Prisma.PrismaClientKnownRequestError) {
-      console.log(e.code);
-      if (e.code === 'P2025') {
-        return NextResponse.json(
-          {
-            error: 'Board not found',
-          },
-          {
-            status: 404,
-          }
-        );
-      }
-    }
-
-    return NextResponse.json(
-      {
-        error: 'Failed to update board',
-      },
-      {
-        status: 500,
-      }
-    );
+  } catch (error) {
+    return handleApiError({
+      error,
+      model: 'Board',
+      defaultMessage: 'Failed to update board',
+    });
   }
 }

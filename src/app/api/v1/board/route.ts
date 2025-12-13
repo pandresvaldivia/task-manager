@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { isValidString } from '@/modules/shared/helpers/string';
+import { handleApiError } from '@/modules/shared/helpers/api';
+import z from 'zod';
+import { StatusCreateManyBoardInput } from '@/generated/prisma/models';
 
 export async function GET() {
   try {
@@ -14,61 +16,35 @@ export async function GET() {
         status: 200,
       }
     );
-  } catch {
-    return NextResponse.json(
-      {
-        error: 'Failed to fetch boards',
-      },
-      {
-        status: 500,
-      }
-    );
+  } catch (error) {
+    return handleApiError({
+      error,
+      model: 'Board',
+      defaultMessage: 'Failed to get boards',
+    });
   }
 }
 
+const postBoardSchema = z.object({
+  name: z.string().min(1, 'Board name cannot be empty'),
+  statuses: z
+    .array(z.object({ name: z.string().min(1, 'Status name cannot be empty') }))
+    .optional(),
+});
+
 export async function POST(request: NextRequest) {
-  const { name, statuses = [] } = await request.json();
-
-  if (!isValidString(name)) {
-    return NextResponse.json(
-      {
-        error: 'Board name is required',
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-
-  if (statuses && !Array.isArray(statuses)) {
-    return NextResponse.json(
-      {
-        error: 'Statuses must be a valid JSON array',
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-
-  const statusesList = statuses.map((status: unknown) => {
-    if (!isValidString(status)) {
-      return NextResponse.json(
-        {
-          error: 'All statuses must be non-empty strings',
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    return {
-      name: (status as string).trim(),
-    };
-  });
-
   try {
+    const body = await request.json();
+    const { name, statuses = [] } = postBoardSchema.parse(body);
+
+    const statusesList: StatusCreateManyBoardInput[] = statuses.map(
+      (status: unknown) => {
+        return {
+          name: (status as string).trim(),
+        };
+      }
+    );
+
     const board = await prisma.board.create({
       data: {
         name: name.trim(),
@@ -88,14 +64,11 @@ export async function POST(request: NextRequest) {
         status: 201,
       }
     );
-  } catch {
-    return NextResponse.json(
-      {
-        error: 'Failed to create board',
-      },
-      {
-        status: 500,
-      }
-    );
+  } catch (error) {
+    return handleApiError({
+      error,
+      model: 'Board',
+      defaultMessage: 'Failed to create board',
+    });
   }
 }
