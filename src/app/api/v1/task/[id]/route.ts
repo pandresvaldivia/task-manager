@@ -3,18 +3,22 @@ import { SubtaskScalarWhereInput } from '@/generated/prisma/models';
 import prisma from '@/lib/prisma';
 import { isValidString } from '@/modules/shared/helpers/string';
 import { NextRequest, NextResponse } from 'next/server';
+import z from 'zod';
+
+type TaskRoute = '/api/v1/task/[id]';
+
+const idSchema = z.uuidv4('Invalid ID format');
 
 export async function GET(
   _request: NextRequest,
-  context: RouteContext<'/api/v1/tasks/[id]'>
+  context: RouteContext<TaskRoute>
 ) {
-  const { id } = await context.params;
-
-  if (!id) {
-    return NextResponse.json({ error: 'Missing task id' }, { status: 400 });
-  }
+  let id = '';
 
   try {
+    const params = await context.params;
+    id = idSchema.parse(params.id);
+
     const task = await prisma.task.findUnique({
       where: { id },
       include: {
@@ -23,7 +27,14 @@ export async function GET(
     });
 
     if (!task) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+      return NextResponse.json(
+        {
+          error: 'Task not found',
+        },
+        {
+          status: 404,
+        }
+      );
     }
 
     return NextResponse.json(
@@ -35,6 +46,20 @@ export async function GET(
       }
     );
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          error: 'Validation failed',
+          details: error.issues.map((issue) => ({
+            message: issue.message,
+          })),
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2025') {
         return NextResponse.json(
@@ -53,69 +78,43 @@ export async function GET(
   }
 }
 
+const putTaskSchema = z.object({
+  title: z.string().min(1, 'Title cannot be empty'),
+  description: z.string().min(1, 'Description cannot be empty'),
+  statusId: z.uuidv4('Invalid statusId format'),
+  subtasks: z
+    .array(
+      z.object({
+        id: z.uuidv4('Invalid subtask ID format').optional(),
+        title: z.string().min(1, 'Subtask title cannot be empty'),
+      })
+    )
+    .optional(),
+});
+
 export async function PUT(
   request: NextRequest,
-  context: RouteContext<'/api/v1/tasks/[id]'>
+  context: RouteContext<TaskRoute>
 ) {
-  const { id } = await context.params;
-  const { statusId, subtasks = [], description, title } = await request.json();
+  let id = '';
 
-  if (!isValidString(id)) {
-    return NextResponse.json({ error: 'Missing task id' }, { status: 400 });
-  }
+  try {
+    const params = await context.params;
+    id = idSchema.parse(params.id);
 
-  if (title && !isValidString(title)) {
-    return NextResponse.json(
-      {
-        error: 'Task title must be a non-empty string',
-      },
-      {
-        status: 400,
-      }
-    );
-  }
+    const body = await request.json();
 
-  if (description && !isValidString(description)) {
-    return NextResponse.json(
-      {
-        error: 'Task description must be a non-empty string',
-      },
-      {
-        status: 400,
-      }
-    );
-  }
+    const {
+      statusId,
+      subtasks = [],
+      description,
+      title,
+    } = putTaskSchema.parse(body);
 
-  if (statusId && !isValidString(statusId)) {
-    return NextResponse.json(
-      {
-        error: 'statusId must be a non-empty string',
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-
-  if (subtasks && !Array.isArray(subtasks)) {
-    return NextResponse.json(
-      {
-        error: 'Subtaks must be a valid JSON array',
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-
-  const subtasksList: { id?: string; title: string }[] = [];
-  const existingIds: SubtaskScalarWhereInput[] = [];
-
-  for (const subtask of subtasks) {
-    if (!isValidString(subtask.title)) {
+    if (subtasks && !Array.isArray(subtasks)) {
       return NextResponse.json(
         {
-          error: 'All subtasks must have a title',
+          error: 'Subtaks must be a valid JSON array',
         },
         {
           status: 400,
@@ -123,19 +122,20 @@ export async function PUT(
       );
     }
 
-    if (subtask.id) {
-      existingIds.push({ id: subtask.id });
+    const subtasksList: { id?: string; title: string }[] = [];
+    const existingIds: SubtaskScalarWhereInput[] = [];
+
+    for (const subtask of subtasks) {
+      if (subtask.id) {
+        existingIds.push({ id: subtask.id });
+      }
+
+      subtasksList.push({
+        id: subtask.id,
+        title: subtask.title.trim(),
+      });
     }
 
-    subtasksList.push({
-      id: subtask.id,
-      title: subtask.title.trim(),
-    });
-  }
-
-  console.log({ subtasksList });
-
-  try {
     const updatedTask = await prisma.task.update({
       where: { id },
       data: {
@@ -165,11 +165,35 @@ export async function PUT(
       }
     );
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          error: 'Validation failed',
+          details: error.issues.map((issue) => ({
+            field: issue.path.join('.'),
+            message: issue.message,
+          })),
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2025') {
         return NextResponse.json(
           {
             error: 'Task not found',
+          },
+          { status: 404 }
+        );
+      }
+
+      if (error.code === 'P2003') {
+        return NextResponse.json(
+          {
+            error: 'The provided statusId does not exist',
           },
           { status: 404 }
         );
@@ -185,15 +209,14 @@ export async function PUT(
 
 export async function DELETE(
   _request: NextRequest,
-  context: RouteContext<'/api/v1/tasks/[id]'>
+  context: RouteContext<TaskRoute>
 ) {
-  const { id } = await context.params;
-
-  if (!isValidString(id)) {
-    return NextResponse.json({ error: 'Missing task id' }, { status: 400 });
-  }
+  let id = '';
 
   try {
+    const params = await context.params;
+    id = idSchema.parse(params.id);
+
     await prisma.task.delete({
       where: {
         id,
@@ -209,6 +232,20 @@ export async function DELETE(
       }
     );
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          error: 'Validation failed',
+          details: error.issues.map((issue) => ({
+            message: issue.message,
+          })),
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2025') {
         return NextResponse.json(
@@ -219,6 +256,7 @@ export async function DELETE(
         );
       }
     }
+
     return NextResponse.json(
       { error: ` Failed to delete task with id: ${id}` },
       { status: 500 }
