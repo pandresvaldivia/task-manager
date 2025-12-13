@@ -1,57 +1,57 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgcrypto]
 }
 
 model Board {
-  id       String   @id @default(uuid())
+  id       String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name     String
   tasks    Task[]
   statuses Status[]
 }
 
 model Task {
-  id          String    @id @default(uuid())
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title       String
   description String?
   subtasks    Subtask[]
   status      Status    @relation(fields: [statusId], references: [id], onDelete: Cascade)
-  statusId    String
+  statusId    String    @map("status_id") @db.Uuid
   board       Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  boardId     String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  boardId     String    @map("board_id") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@index([boardId])
   @@index([statusId])
+  @@map("tasks")
 }
 
 model Subtask {
-  id        String  @id @default(uuid())
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title     String
   completed Boolean @default(false)
   task      Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  taskId    String
+  taskId    String  @map("task_id") @db.Uuid
 
   @@index([taskId])
+  @@map("subtasks")
 }
 
 model Status {
-  id      String @id @default(uuid())
+  id      String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name    String
   board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  boardId String
+  boardId String @map("board_id") @db.Uuid
   tasks   Task[]
 
   @@index([boardId])
+  @@map("statuses")
 }
