@@ -7,7 +7,6 @@ const postTaskSchema = z.object({
   title: z.string().min(1, 'Task title is required'),
   description: z.string().min(1, 'Task description is required'),
   statusId: z.uuidv4('Task status id must be a valid UUID'),
-  boardId: z.uuidv4('Task board id must be a valid UUID'),
   subtasks: z
     .array(z.string().min(1, 'Subtask title must be a non-empty string'))
     .optional(),
@@ -20,7 +19,6 @@ export async function POST(request: Request) {
       title,
       description,
       statusId,
-      boardId,
       subtasks = [],
     } = postTaskSchema.parse(body);
 
@@ -35,7 +33,6 @@ export async function POST(request: Request) {
         title,
         description,
         statusId,
-        boardId,
         subtasks: {
           createMany: {
             data: subtasksList,

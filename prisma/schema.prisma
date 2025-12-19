@@ -13,7 +13,6 @@ datasource db {
 model Board {
   id       String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name     String
-  tasks    Task[]
   statuses Status[]
 }
 
@@ -24,12 +23,9 @@ model Task {
   subtasks    Subtask[]
   status      Status    @relation(fields: [statusId], references: [id], onDelete: Cascade)
   statusId    String    @map("status_id") @db.Uuid
-  board       Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  boardId     String    @map("board_id") @db.Uuid
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  @@index([boardId])
   @@index([statusId])
   @@map("tasks")
 }

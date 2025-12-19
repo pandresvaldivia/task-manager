@@ -40,7 +40,6 @@ async function main() {
     data: {
       title: 'Create social media strategy',
       description: 'Develop a comprehensive social media strategy for Q1',
-      board: { connect: { id: marketingBoard.id } },
       status: { connect: { id: todoStatus.id } },
       subtasks: {
         create: [
@@ -57,7 +56,6 @@ async function main() {
       title: 'Design promotional materials',
       description:
         'Create banners, flyers, and digital assets for the campaign',
-      board: { connect: { id: marketingBoard.id } },
       status: { connect: { id: inProgressStatus.id } },
       subtasks: {
         create: [
@@ -72,7 +70,6 @@ async function main() {
     data: {
       title: 'Launch email campaign',
       description: 'Send out newsletter to subscriber list',
-      board: { connect: { id: marketingBoard.id } },
       status: { connect: { id: doneStatus.id } },
       subtasks: {
         create: [
@@ -123,7 +120,6 @@ async function main() {
     data: {
       title: 'Implement user authentication',
       description: 'Add login, signup, and password reset functionality',
-      board: { connect: { id: developmentBoard.id } },
       status: { connect: { id: backlogStatus.id } },
       subtasks: {
         create: [
@@ -140,7 +136,6 @@ async function main() {
     data: {
       title: 'Build dashboard UI',
       description: 'Create the main dashboard with charts and statistics',
-      board: { connect: { id: developmentBoard.id } },
       status: { connect: { id: inDevelopmentStatus.id } },
       subtasks: {
         create: [
@@ -158,7 +153,6 @@ async function main() {
       title: 'API integration for user profiles',
       description:
         'Connect frontend to backend API for user profile management',
-      board: { connect: { id: developmentBoard.id } },
       status: { connect: { id: testingStatus.id } },
       subtasks: {
         create: [
@@ -175,7 +169,6 @@ async function main() {
     data: {
       title: 'Set up CI/CD pipeline',
       description: 'Configure automated testing and deployment',
-      board: { connect: { id: developmentBoard.id } },
       status: { connect: { id: completedStatus.id } },
       subtasks: {
         create: [
