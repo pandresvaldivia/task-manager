@@ -1,3 +1,3 @@
 export function isValidString(input: unknown): boolean {
-  return typeof input === "string" && input.trim() !== "";
+  return typeof input === 'string' && input.trim() !== '';
 }

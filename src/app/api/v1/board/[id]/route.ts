@@ -58,7 +58,7 @@ export async function DELETE(
 
     return NextResponse.json(
       {
-        message: 'Board deleted successfully',
+        data: { id },
       },
       {
         status: 200,

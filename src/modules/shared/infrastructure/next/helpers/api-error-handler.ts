@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { ApiValidationError } from '../interfaces/api';
 import { Prisma } from '@/generated/prisma/client';
 import z from 'zod';
+import { ApiValidationError } from '../interfaces/api';
 
 export function handleApiError({
   error,
