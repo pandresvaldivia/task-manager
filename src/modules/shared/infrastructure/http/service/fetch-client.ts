@@ -25,22 +25,28 @@ export class HttpRequestService implements HttpsRequest {
   }
 
   private urlBuilder(endpoint: string): string {
-    return `/api/${this.version}/${endpoint}`;
+    return `http://localhost:3000/api/${this.version}/${endpoint}`;
   }
 
-  protected async get<T>(endpoint: string): Promise<ApiResponse<T>> {
+  public async get<T>(endpoint: string): Promise<ApiResponse<T>> {
     return this.request<T>({ method: 'GET', endpoint });
   }
 
-  protected post<T>(body: unknown, endpoint: string): Promise<ApiResponse<T>> {
+  public async post<T>(
+    body: unknown,
+    endpoint: string
+  ): Promise<ApiResponse<T>> {
     return this.request<T>({ method: 'POST', body, endpoint });
   }
 
-  protected put<T>(body: unknown, endpoint: string): Promise<ApiResponse<T>> {
+  public async put<T>(
+    body: unknown,
+    endpoint: string
+  ): Promise<ApiResponse<T>> {
     return this.request<T>({ method: 'PUT', body, endpoint });
   }
 
-  protected delete<T>(endpoint: string): Promise<ApiResponse<T>> {
+  public async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
     return this.request<T>({ method: 'DELETE', endpoint });
   }
 

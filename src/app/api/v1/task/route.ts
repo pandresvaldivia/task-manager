@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import z from 'zod';
-import { handleApiError } from '@/modules/shared/helpers/api';
+impor'@/modules/shared/infrastructure/next/helpers/api-error-handler';
 
 const postTaskSchema = z.object({
   title: z.string().min(1, 'Task title is required'),

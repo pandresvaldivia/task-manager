@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { handleApiError } from '@/modules/shared/helpers/api';
 import z from 'zod';
 import { StatusCreateManyBoardInput } from '@/generated/prisma/models';
+import { handleApiError } from '@/modules/shared/infrastructure/next/helpers/api-error-handler';
 
 export async function GET() {
   try {

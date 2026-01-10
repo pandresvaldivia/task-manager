@@ -1,5 +1,5 @@
 import prisma from '@/lib/prisma';
-import { handleApiError } from '@/modules/shared/helpers/api';
+impor'@/modules/shared/infrastructure/next/helpers/api-error-handler';
 import { NextRequest, NextResponse } from 'next/server';
 import z from 'zod';
 

@@ -13,3 +13,7 @@ export const apiError = (error: unknown): ApiResponse<never> => ({
   data: null,
   error,
 });
+
+export interface ApiGenericResponse<T> {
+  data: T;
+}

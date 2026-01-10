@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { StatusScalarWhereInput } from '@/generated/prisma/models';
 import z from 'zod';
-import { handleApiError } from '@/modules/shared/helpers/api';
+import { handleApiError } from '@/modules/shared/infrastructure/next/helpers/api-error-handler';
 
 type BoardRoute = '/api/v1/board/[id]';
 
