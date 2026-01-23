@@ -19,7 +19,10 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      //creae a path for the icons folder i have an index.ts barril file at src/ui/shared/components/icons/solid/index.ts
+      "@/icons/solid": ["./src/ui/shared/components/icons/solid/index.ts"],
+      "@/icons/outline": ["./src/ui/shared/components/icons/outline/index.ts"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

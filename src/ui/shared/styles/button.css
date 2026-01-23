@@ -1,9 +1,9 @@
 @layer components {
   .button {
-    @apply rounded-full px-3 py-2 transition-colors font-bold text-sm;
+    @apply inline-flex items-center rounded-full px-3 py-2 transition-colors font-bold text-sm whitespace-nowrap disabled:pointer-events-none disabled:opacity-25 shrink-0 [&_svg]:shrink-0;
   }
 
-  .button-l {
+  .button-lg {
     @apply px-4 py-3.5 text-base;
   }
 

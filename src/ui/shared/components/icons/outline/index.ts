@@ -1,0 +1,1 @@
+export { BoardIcon } from './board';
