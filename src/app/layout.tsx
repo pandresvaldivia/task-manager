@@ -20,7 +20,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const data = await getAllBoardsUseCase();
+  const boards = await getAllBoardsUseCase();
 
   return (
     <html lang='en'>
@@ -28,7 +28,7 @@ export default async function RootLayout({
         className={`${jakarta.variable} antialiased font-jakarta bg-light-grey dark:bg-very-dark-grey`}
       >
         <ShadcnSidebarProvider>
-          <Sidebar items={data} />
+          <Sidebar items={boards} className='hidden lg:block' />
           {children}
         </ShadcnSidebarProvider>
       </body>

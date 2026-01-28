@@ -1,3 +1,5 @@
+'use client';
+
 import { EyeIcon } from '@/icons/solid';
 import { SidebarTrigger } from './sidebar-trigger';
 import { SidebarContainer } from './sidebar-container';
@@ -5,14 +7,20 @@ import { SidebarMenu } from './sidebar-menu';
 import { SidebarMenuItem } from './sidebar-menu-item';
 import { KanbanLogoIcon } from '@/ui/shared/components/icons/colorful/kanban-logo';
 import { SidebarHideButton } from './sidebar-hide-button';
+import { cn } from '@/modules/shared/infrastructure/shadcn/helpers/utils';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface Props {
   items: Array<{ id: string; name: string }>;
+  className?: string;
 }
 
-export async function Sidebar({ items }: Props) {
+export function Sidebar({ items, className }: Props) {
+  const pathname = usePathname();
+
   return (
-    <div className='relative'>
+    <div className={cn('relative', className)}>
       <SidebarContainer>
         <div className='p-8 mb-5'>
           <KanbanLogoIcon height='24' width='152' className='h-6 w-auto' />
@@ -23,19 +31,18 @@ export async function Sidebar({ items }: Props) {
               All Boards ({items.length})
             </p>
             <SidebarMenu>
-              {items.map((board, index) => {
+              {items.map((board) => {
+                const isActive = pathname === `/board/${board.id}`;
+
                 return (
-                  <SidebarMenuItem
-                    key={board.id}
-                    text={board.name}
-                    isActive={index === 0}
-                  />
+                  <SidebarMenuItem key={board.id} isActive={isActive} asChild>
+                    <Link href={`/board/${board.id}`}>{board.name}</Link>
+                  </SidebarMenuItem>
                 );
               })}
-              <SidebarMenuItem
-                text='+ Create New Board'
-                className='text-purple'
-              />
+              <SidebarMenuItem className='text-purple'>
+                + Create New Board
+              </SidebarMenuItem>
             </SidebarMenu>
           </div>
           <div className='pb-8'>

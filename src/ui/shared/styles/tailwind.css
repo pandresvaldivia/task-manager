@@ -18,8 +18,14 @@
   --font-*: initial;
   --font-jakarta: var(--font-jakarta), sans-serif;
 
+  --text-heading-xl: 1.25rem;
+  --text-heading-lg: 1.125rem;
   --text-base: 0.9375rem;
   --text-sm: 0.8125rem;
+
+  --grid-template-rows-auto-fr: auto 1fr;
+
+  --shadow-xl: 0 10px 20px rgba(54, 78, 126, 0.25);
 }
 
 @custom-variant dark (&:where(.dark, .dark *));

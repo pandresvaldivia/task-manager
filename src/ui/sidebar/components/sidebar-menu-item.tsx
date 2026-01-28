@@ -1,28 +1,40 @@
 import { BoardIcon } from '@/icons/outline';
+import {
+  Slot,
+  Slottable,
+} from '@/modules/shared/infrastructure/react/helpers/slot';
 import { cn } from '@/modules/shared/infrastructure/shadcn/helpers/utils';
 
 type Props = {
-  text: string;
+  children: React.ReactNode;
   className?: string;
   isActive?: boolean;
+  asChild?: boolean;
 };
 
-export function SidebarMenuItem({ text, className, isActive }: Props) {
+export function SidebarMenuItem({
+  children,
+  className,
+  isActive,
+  asChild,
+}: Props) {
+  const Component = asChild ? Slot : 'button';
+
   return (
     <li>
-      <button
+      <Component
         className={cn(
           'flex justify-start items-center gap-4 px-8 h-12 w-full transition-colors rounded-none rounded-r-full text-white heading-m',
           {
             'text-medium-grey hover:bg-light-grey': !isActive,
             'bg-purple hover:bg-purple-hover text-white': isActive,
           },
-          className
+          className,
         )}
       >
         <BoardIcon className='size-4' />
-        {text}
-      </button>
+        <Slottable>{children}</Slottable>
+      </Component>
     </li>
   );
 }

@@ -15,9 +15,8 @@ export class ApiBoardRepository implements BoardRepository {
   }
 
   async getAllBoards(): Promise<BoardSummary[]> {
-    const response = await this.httpClient.get<
-      ApiGenericResponse<BoardSummary[]>
-    >('board');
+    const response =
+      await this.httpClient.get<ApiGenericResponse<BoardSummary[]>>('board');
 
     if (response.success && response.data) {
       return response.data.data;
@@ -26,9 +25,18 @@ export class ApiBoardRepository implements BoardRepository {
     return [];
   }
 
-  getBoardById(boardId: string): Promise<Board | null> {
-    throw new Error('Method not implemented.');
+  async getBoardById(boardId: string): Promise<Board | null> {
+    const reponse = await this.httpClient.get<ApiGenericResponse<Board>>(
+      `board/${boardId}`,
+    );
+
+    if (reponse.success && reponse.data) {
+      return reponse.data.data;
+    }
+
+    return null;
   }
+
   createStatus(name: string): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
