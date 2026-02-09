@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import '@/ui/shared/styles/globals.css';
-import { ShadcnSidebarProvider } from '@/ui/shadcn/sidebar';
 import { Sidebar } from '@/ui/sidebar/components/sidebar';
 import { getAllBoardsUseCase } from '@/main/dependencies';
+import { SidebarProvider } from '@/ui/sidebar/providers/sidebar-provider';
+import { ThemeProvider } from '@/modules/shared/infrastructure/react/providers/theme-provider';
 
 const jakarta = Plus_Jakarta_Sans({
   variable: '--font-jakarta',
@@ -23,14 +24,16 @@ export default async function RootLayout({
   const boards = await getAllBoardsUseCase();
 
   return (
-    <html lang='en'>
+    <html lang='en' suppressHydrationWarning>
       <body
         className={`${jakarta.variable} antialiased font-jakarta bg-light-grey dark:bg-very-dark-grey`}
       >
-        <ShadcnSidebarProvider>
-          <Sidebar items={boards} className='hidden lg:block' />
-          {children}
-        </ShadcnSidebarProvider>
+        <ThemeProvider attribute='class' disableTransitionOnChange>
+          <SidebarProvider>
+            <Sidebar items={boards} className='hidden lg:block' />
+            {children}
+          </SidebarProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

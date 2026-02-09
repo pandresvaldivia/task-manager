@@ -26,7 +26,8 @@ export function SidebarMenuItem({
         className={cn(
           'flex justify-start items-center gap-4 px-8 h-12 w-full transition-colors rounded-none rounded-r-full text-white heading-m',
           {
-            'text-medium-grey hover:bg-light-grey': !isActive,
+            'text-medium-grey hover:bg-light-grey dark:hover:bg-very-dark-grey':
+              !isActive,
             'bg-purple hover:bg-purple-hover text-white': isActive,
           },
           className,

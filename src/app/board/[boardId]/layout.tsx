@@ -1,5 +1,5 @@
 import { getAllBoardsUseCase, getBoardByIdUseCase } from '@/main/dependencies';
-import { Header } from '@/ui/header/components/Header';
+import { Header } from '@/ui/header/components/header';
 
 export default async function BoardLayout({
   children,
